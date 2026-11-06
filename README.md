@@ -56,9 +56,10 @@ Modules are installed under `result/lib/modules/<version>/extra/rknpu.ko`.
 GitHub Actions builds each kernel separately on `ubuntu-24.04-arm` and uploads
 successful modules as artifacts. These are compile/link checks, not hardware
 tests; artifacts must match the target kernel configuration to load. The builds
-use the minimal configuration in `Makefile`. Linux 6.18 and 7.3 build successfully;
-Linux 6.12 currently fails on the driver's `hrtimer_setup` and `vmf_insert_mixed`
-API usage. Update pins with `nix flake update`.
+use the minimal configuration in `Makefile`. Linux 6.12, 6.18 and 7.3 build
+successfully. Compatibility guards support timer setup and namespace imports
+before 6.13, and `pfn_t` fault insertion before 6.17. Hardware/runtime support
+still requires testing. Update pins with `nix flake update`.
 
 ## License
 

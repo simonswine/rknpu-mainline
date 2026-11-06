@@ -780,8 +780,13 @@ static enum hrtimer_restart hrtimer_handler(struct hrtimer *timer)
 static void rknpu_init_timer(struct rknpu_device *rknpu_dev)
 {
 	rknpu_dev->kt = ktime_set(0, RKNPU_LOAD_INTERVAL);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
+	hrtimer_init(&rknpu_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	rknpu_dev->timer.function = hrtimer_handler;
+#else
 	hrtimer_setup(&rknpu_dev->timer, hrtimer_handler, CLOCK_MONOTONIC,
 		      HRTIMER_MODE_REL);
+#endif
 	hrtimer_start(&rknpu_dev->timer, rknpu_dev->kt, HRTIMER_MODE_REL);
 }
 
@@ -1663,5 +1668,9 @@ MODULE_LICENSE("GPL v2");
 MODULE_VERSION(RKNPU_GET_DRV_VERSION_STRING(DRIVER_MAJOR, DRIVER_MINOR,
 					    DRIVER_PATCHLEVEL));
 #if KERNEL_VERSION(5, 16, 0) < LINUX_VERSION_CODE
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
+MODULE_IMPORT_NS(DMA_BUF);
+#else
 MODULE_IMPORT_NS("DMA_BUF");
+#endif
 #endif

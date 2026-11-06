@@ -15,6 +15,9 @@
 #include <linux/iommu.h>
 #include <linux/version.h>
 #include <linux/vmalloc.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
+#include <linux/pfn_t.h>
+#endif
 #include <asm/cacheflush.h>
 
 #if KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE
@@ -1266,8 +1269,11 @@ vm_fault_t rknpu_gem_fault(struct vm_fault *vmf)
 	}
 
 	pfn = page_to_pfn(rknpu_obj->pages[page_offset]);
-	/* 7.1: pfn_t was removed; vmf_insert_mixed() takes a bare pfn. */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 17, 0)
+	return vmf_insert_mixed(vma, vmf->address, __pfn_to_pfn_t(pfn, PFN_DEV));
+#else
 	return vmf_insert_mixed(vma, vmf->address, pfn);
+#endif
 }
 #elif KERNEL_VERSION(4, 14, 0) <= LINUX_VERSION_CODE
 int rknpu_gem_fault(struct vm_fault *vmf)
