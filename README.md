@@ -39,6 +39,27 @@ dmesg | grep -i rknpu          # "using non-iommu mode" + Initialized rknpu
 ls /dev/dri/                   # renderD12x appears
 ```
 
+## Nix builds and CI
+
+The flake pins nixpkgs in `flake.lock` and builds against Linux 6.12, 6.18,
+and 7.3 with their configured headers and symbol versions. On ARM64 Linux:
+
+```sh
+nix build .#linux-6_12 -L
+nix build .#linux-6_18 -L
+nix build .#linux-7_3 -L
+# Build all checks:
+nix flake check -L
+```
+
+Modules are installed under `result/lib/modules/<version>/extra/rknpu.ko`.
+GitHub Actions builds each kernel separately on `ubuntu-24.04-arm` and uploads
+successful modules as artifacts. These are compile/link checks, not hardware
+tests; artifacts must match the target kernel configuration to load. The builds
+use the minimal configuration in `Makefile`. Linux 6.18 and 7.3 build successfully;
+Linux 6.12 currently fails on the driver's `hrtimer_setup` and `vmf_insert_mixed`
+API usage. Update pins with `nix flake update`.
+
 ## License
 
 GPL-2.0-only. See [LICENSE](LICENSE).
